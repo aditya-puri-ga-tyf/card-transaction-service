@@ -325,5 +325,39 @@ describe('TransactionsService', () => {
         )
       ).rejects.toThrow(NotFoundError);
     });
+
+    it('should refund an approved transaction', async () => {
+      const approvedTransaction = {
+        ...mockTransaction,
+        status: TransactionStatus.APPROVED
+      };
+
+      const refundedTransaction = {
+        ...approvedTransaction,
+        status: TransactionStatus.REFUNDED
+      };
+
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(mockAdminUser);
+      jest.spyOn(repository, 'findTransaction').mockResolvedValue(approvedTransaction);
+      jest.spyOn(repository, 'findCard').mockResolvedValue(mockCard);
+      jest.spyOn(prisma, '$transaction').mockImplementation((callback: any) => 
+        Promise.resolve(callback({
+          transaction: {
+            update: jest.fn().mockResolvedValue(refundedTransaction)
+          },
+          card: {
+            update: jest.fn().mockResolvedValue(mockCard)
+          }
+        }))
+      );
+
+      const result = await service.updateTransactionStatus(
+        'transaction-123',
+        'admin-123',
+        TransactionStatus.REFUNDED
+      );
+
+      expect(result).toEqual(refundedTransaction);
+    });
   });
 }); 

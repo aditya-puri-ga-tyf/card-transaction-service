@@ -160,7 +160,6 @@ export class TransactionsService {
       });
     }
 
-    // Handle balance updates based on status change
     return this.prisma.$transaction(async (tx) => {
       const updatedTransaction = await tx.transaction.update({
         where: { id: transactionId },
@@ -188,16 +187,36 @@ export class TransactionsService {
               }
             });
             break;
+          case TransactionStatus.REFUNDED:
+            // Add the amount back to balance
+            await tx.card.update({
+              where: { id: card.id },
+              data: {
+                balance: card.balance.plus(transaction.amount)
+              }
+            });
+            break;
         }
       } else if (transaction.type === TransactionType.CREDIT) {
-        if (newStatus === TransactionStatus.APPROVED) {
-          // Add to balance only on approval
-          await tx.card.update({
-            where: { id: card.id },
-            data: {
-              balance: card.balance.plus(transaction.amount)
-            }
-          });
+        switch (newStatus) {
+          case TransactionStatus.APPROVED:
+            // Add to balance
+            await tx.card.update({
+              where: { id: card.id },
+              data: {
+                balance: card.balance.plus(transaction.amount)
+              }
+            });
+            break;
+          case TransactionStatus.REFUNDED:
+            // Deduct from balance
+            await tx.card.update({
+              where: { id: card.id },
+              data: {
+                balance: card.balance.minus(transaction.amount)
+              }
+            });
+            break;
         }
       }
 

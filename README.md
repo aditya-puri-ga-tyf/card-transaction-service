@@ -163,15 +163,16 @@ PATCH /api/transactions/:id/status
 ```
 
 ### Transaction Status Flow
-- CREDIT transactions: PENDING → APPROVED
-- DEBIT transactions: PENDING → APPROVED/FAILED
-- APPROVED transactions can be REFUNDED
+- CREDIT transactions: PENDING → APPROVED → REFUNDED
+- DEBIT transactions: PENDING → APPROVED/FAILED → REFUNDED (if APPROVED)
 
 ### Business Rules
 1. DEBIT transactions require sufficient balance
 2. Only admins can update transaction status
 3. Users can only access their own transactions
 4. Card balance is updated automatically based on transaction status
+5. Only APPROVED transactions can be REFUNDED
+6. REFUND reverses the original transaction's balance changes
 
 ## Testing
 
