@@ -1,0 +1,648 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "summary": "Welcome message",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Returns welcome message"
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "operationId": "AppController_healthCheck",
+        "summary": "Health check endpoint",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Application health status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "example": "2024-01-01T00:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/transactions": {
+      "post": {
+        "operationId": "TransactionsController_createTransaction",
+        "summary": "Create a new transaction",
+        "parameters": [
+          {
+            "name": "x-user-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransactionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction created successfully",
+            "schema": {
+              "example": {
+                "id": "123e4567-e89b-12d3-a456-426614174000",
+                "cardId": "123e4567-e89b-12d3-a456-426614174000",
+                "userId": "123e4567-e89b-12d3-a456-426614174000",
+                "amount": 100.5,
+                "type": "CREDIT",
+                "status": "APPROVED",
+                "description": "Monthly salary deposit",
+                "updatedBalance": 1000.75,
+                "createdAt": "2024-01-20T12:34:56.789Z",
+                "updatedAt": "2024-01-20T12:34:56.789Z"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User not authorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "transactions"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "x-user-id": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "TransactionsController_getTransactions",
+        "summary": "Get all transactions for a card",
+        "parameters": [
+          {
+            "name": "x-user-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cardId",
+            "required": true,
+            "in": "query",
+            "description": "ID of the card to get transactions for",
+            "schema": {
+              "example": "123e4567-e89b-12d3-a456-426614174000",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filter by transaction type",
+            "schema": {
+              "enum": [
+                "CREDIT",
+                "DEBIT"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Filter by start date (ISO string)",
+            "schema": {
+              "format": "date-time",
+              "example": "2024-01-01T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "Filter by end date (ISO string)",
+            "schema": {
+              "format": "date-time",
+              "example": "2024-01-31T23:59:59.999Z",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of transactions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Card not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "transactions"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "x-user-id": []
+          }
+        ]
+      }
+    },
+    "/api/transactions/{id}": {
+      "get": {
+        "operationId": "TransactionsController_getTransaction",
+        "summary": "Get a specific transaction",
+        "parameters": [
+          {
+            "name": "x-user-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Transaction ID",
+            "schema": {
+              "example": "123e4567-e89b-12d3-a456-426614174000",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "transactions"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "x-user-id": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "TransactionsController_deleteTransaction",
+        "summary": "Soft delete a transaction (Admin only)",
+        "parameters": [
+          {
+            "name": "x-user-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Transaction ID",
+            "schema": {
+              "example": "123e4567-e89b-12d3-a456-426614174000",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User does not have admin privileges",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "transactions"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "x-user-id": []
+          }
+        ]
+      }
+    },
+    "/api/transactions/{id}/status": {
+      "patch": {
+        "operationId": "TransactionsController_updateTransactionStatus",
+        "summary": "Update transaction status (Admin only)",
+        "parameters": [
+          {
+            "name": "x-user-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Transaction ID",
+            "schema": {
+              "example": "123e4567-e89b-12d3-a456-426614174000",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransactionStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transaction status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User does not have admin privileges",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "transactions"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "x-user-id": []
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Card Transaction API",
+    "description": "Card Transaction REST API Documentation",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "transactions",
+      "description": ""
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "x-user-id": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-user-id",
+        "description": "User ID for authentication"
+      }
+    },
+    "schemas": {
+      "CreateTransactionDto": {
+        "type": "object",
+        "properties": {
+          "cardId": {
+            "type": "string",
+            "description": "Card ID to perform transaction on",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Transaction amount (positive number)",
+            "example": 100.5,
+            "minimum": 0
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of transaction",
+            "enum": [
+              "CREDIT",
+              "DEBIT"
+            ],
+            "example": "CREDIT"
+          },
+          "description": {
+            "type": "string",
+            "description": "Transaction description",
+            "example": "Monthly salary deposit"
+          }
+        },
+        "required": [
+          "cardId",
+          "amount",
+          "type"
+        ]
+      },
+      "TransactionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "cardId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "userId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "amount": {
+            "type": "number",
+            "example": 100.5
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "CREDIT",
+              "DEBIT"
+            ],
+            "example": "CREDIT"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "FAILED",
+              "REFUNDED"
+            ],
+            "example": "APPROVED"
+          },
+          "description": {
+            "type": "string",
+            "example": "Monthly salary deposit"
+          },
+          "updatedBalance": {
+            "type": "number",
+            "example": 1000.75,
+            "description": "Updated card balance after transaction"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-20T12:34:56.789Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-20T12:34:56.789Z"
+          }
+        },
+        "required": [
+          "id",
+          "cardId",
+          "userId",
+          "amount",
+          "type",
+          "status",
+          "description",
+          "updatedBalance",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ApiErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "ValidationError"
+          },
+          "message": {
+            "type": "string",
+            "example": "Invalid input data"
+          },
+          "details": {
+            "type": "object",
+            "example": {
+              "field": "amount",
+              "expected": "<= 2000",
+              "received": 3000
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "2024-01-20T12:34:56.789Z"
+          }
+        },
+        "required": [
+          "error",
+          "message",
+          "details",
+          "timestamp"
+        ]
+      },
+      "UpdateTransactionStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "New status for the transaction",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "FAILED",
+              "REFUNDED"
+            ],
+            "example": "APPROVED",
+            "examples": {
+              "APPROVED": {
+                "value": "APPROVED",
+                "description": "Transaction is approved and completed"
+              },
+              "FAILED": {
+                "value": "FAILED",
+                "description": "Transaction has failed"
+              },
+              "PENDING": {
+                "value": "PENDING",
+                "description": "Transaction is pending processing"
+              },
+              "REFUNDED": {
+                "value": "REFUNDED",
+                "description": "Transaction has been refunded"
+              }
+            }
+          }
+        },
+        "required": [
+          "status"
+        ]
+      }
+    }
+  }
+}
