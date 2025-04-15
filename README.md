@@ -1,5 +1,7 @@
 # Transaction Management API
 
+A robust REST API for managing financial transactions, built with NestJS and Prisma.
+
 ## Setup Instructions
 
 ### Prerequisites
@@ -49,6 +51,19 @@ npm run start:prod
 ```
 
 ## API Documentation
+
+### Swagger Documentation
+The API documentation is available through Swagger UI at:
+```
+http://localhost:3000/api/docs
+```
+
+This interactive documentation allows you to:
+- View all available endpoints
+- Test API endpoints directly from the browser
+- See request/response schemas
+- Understand authentication requirements
+- Try out different transaction flows
 
 ### Authentication
 All endpoints require `x-user-id` header for user identification.
